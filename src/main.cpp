@@ -18,10 +18,15 @@ int din5 = 19;
 
 //Waterpumps
 int rly1 = 12;
-int rly2 = 14;
+String rly1State = "off";
+int rly2 = 13; //TODO: CHANGE THIS
+String rly2State = "off";
 int rly3 = 27;
+String rly3State = "off";
 int rly4 = 26;
+String rly4State = "off";
 int rly5 = 25;
+String rly5State = "off";
 
 //Soil moist sensors
 int ain1 = 39; //check if this is actually the right pin
@@ -74,15 +79,25 @@ float getSoilMoist(int plantnr){
   return 0;
 }
 
+//Battery
+#define VBAT_PIN 33
+
+//Will show voltage level using a voltage devider. this is highly shit TODO: use battery fule gague
+float getBatteryLevel()
+{
+    return analogRead(VBAT_PIN) * 2;
+}
+
 void waterPlant(int rly){
     digitalWrite(rly, !digitalRead(rly));
 }
-
 
 void setup() {
   Serial.begin(115200);
 
   //Setup pins
+  pinMode(VBAT_PIN, INPUT);
+
   pinMode(din5, INPUT);  
   pinMode(din4, INPUT);  
   pinMode(din3, INPUT);  
@@ -96,7 +111,7 @@ void setup() {
   pinMode(rly5,OUTPUT);
 
   digitalWrite(rly1, LOW);
-  digitalWrite(rly2, LOW);
+  digitalWrite(rly2, LOW); //todo change this before deployment
   digitalWrite(rly3, LOW);
   digitalWrite(rly4, LOW);
   digitalWrite(rly5, LOW);
@@ -141,21 +156,23 @@ void loop(){
             client.println();
             
             // turns the GPIOs on and off
-            if (header.indexOf("GET /26/on") >= 0) {
-              output26State = "on";
-              digitalWrite(rly1, HIGH);
-            } else if (header.indexOf("GET /26/off") >= 0) {
-              output26State = "off";
-              digitalWrite(rly1, LOW);
-            } else if (header.indexOf("GET /27/on") >= 0) {
-              Serial.println("GPIO 27 on");
-              output27State = "on";
-              // digitalWrite(output27, HIGH);
-            } else if (header.indexOf("GET /27/off") >= 0) {
-              Serial.println("GPIO 27 off");
-              output27State = "off";
-              // digitalWrite(output27, LOW);
-            }
+            if (header.indexOf("GET /" + String(rly1)) >= 0) {
+              digitalWrite(rly1, !digitalRead(rly1));
+            } 
+            if (header.indexOf("GET /" + String(rly2)) >= 0) {
+              digitalWrite(rly2, !digitalRead(rly2));
+            } 
+            if (header.indexOf("GET /" + String(rly3)) >= 0) {
+              digitalWrite(rly3, !digitalRead(rly3));
+            } 
+            if (header.indexOf("GET /" + String(rly4)) >= 0) {
+              digitalWrite(rly4, !digitalRead(rly4));
+            } 
+            if (header.indexOf("GET /" + String(rly5)) >= 0) {
+              digitalWrite(rly5, !digitalRead(rly5));
+            } 
+
+            
             
             // Display the HTML web page
             client.println("<!DOCTYPE html><html>");
@@ -169,25 +186,48 @@ void loop(){
             client.println(".button2 {background-color: #555555;}</style></head>");
             
             // Web Page Heading
-            client.println("<body><h1>ESP32 Web Server</h1>");
+            client.println("<body><h1>Plantmate Test Server</h1>");
             
-            // Display current state, and ON/OFF buttons for GPIO 26  
-            client.println("<p>GPIO 26 - State " + output26State + "</p>");
-            // If the output26State is off, it displays the ON button       
-            if (output26State=="off") {
-              client.println("<p><a href=\"/26/on\"><button class=\"button\">ON</button></a></p>");
+            client.println("<h2>Activate Pumps: </h2>");
+            
+            if (digitalRead(rly1)) {
+              client.println("<p><a href=\"/" + String(rly1) + "/on\"><button class=\"button\">Pump1 On</button></a></p>");
             } else {
-              client.println("<p><a href=\"/26/off\"><button class=\"button button2\">OFF</button></a></p>");
+              client.println("<p><a href=\"/" + String(rly1) + "/off\"><button class=\"button button2\">Pump1 off</button></a></p>");
             } 
-               
-            // Display current state, and ON/OFF buttons for GPIO 27  
-            client.println("<p>GPIO 27 - State " + output27State + "</p>");
-            // If the output27State is off, it displays the ON button       
-            if (output27State=="off") {
-              client.println("<p><a href=\"/27/on\"><button class=\"button\">ON</button></a></p>");
+            if (digitalRead(rly2)) {
+              client.println("<p><a href=\"/" + String(rly2) + "/on\"><button class=\"button\">Pump1 On</button></a></p>");
             } else {
-              client.println("<p><a href=\"/27/off\"><button class=\"button button2\">OFF</button></a></p>");
-            }
+              client.println("<p><a href=\"/" + String(rly2) + "/off\"><button class=\"button button2\">Pump2 off</button></a></p>");
+            } 
+            if (digitalRead(rly3)) {
+              client.println("<p><a href=\"/" + String(rly3) + "/on\"><button class=\"button\">Pump1 On</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/" + String(rly3) + "/off\"><button class=\"button button2\">Pump3 off</button></a></p>");
+            } 
+            if (digitalRead(rly4)) {
+              client.println("<p><a href=\"/" + String(rly4) + "/on\"><button class=\"button\">Pump1 On</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/" + String(rly4) + "/off\"><button class=\"button button2\">Pump4 off</button></a></p>");
+            } 
+            if (digitalRead(rly5)) {
+              client.println("<p><a href=\"/" + String(rly5) + "/on\"><button class=\"button\">Pump1 On</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/" + String(rly5) + "/off\"><button class=\"button button2\">Pump5 off</button></a></p>");
+            } 
+
+            client.println("<p>Sensor 1:" + String(getSoilMoist(1)) + "</p>");
+            client.println("<p>Sensor 2:" + String(getSoilMoist(2)) + "</p>");
+            client.println("<p>Sensor 3:" + String(getSoilMoist(3)) + "</p>");
+            client.println("<p>Sensor 4:" + String(getSoilMoist(4)) + "</p>");
+
+            client.println("<p>Battery level: " + String(getBatteryLevel()) + "</p>");
+
+
+
+
+
+               
             client.println("</body></html>");
             
             // The HTTP response ends with another blank line

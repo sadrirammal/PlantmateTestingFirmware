@@ -2,12 +2,16 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <AsyncTCP.h>
+#include "Adafruit_MAX1704X.h"
 
 //Global Variables
 
 //Hotspot password
 const char* ssid     = "Plantmate";
 const char* password = "123456789";
+
+//Battery fule gague
+Adafruit_MAX17048 maxlipo;
 
 //Water tank sensors
 int din1 = 16;
@@ -19,7 +23,7 @@ int din5 = 19;
 //Waterpumps
 int rly1 = 12;
 String rly1State = "off";
-int rly2 = 13; //TODO: CHANGE THIS
+int rly2 = 14; //TODO: CHANGE THIS
 String rly2State = "off";
 int rly3 = 27;
 String rly3State = "off";
@@ -92,8 +96,29 @@ void waterPlant(int rly){
     digitalWrite(rly, !digitalRead(rly));
 }
 
+int getWaterLevel(){
+  if(digitalRead(din5) == HIGH){
+    return 90;
+  }
+  if(digitalRead(din4) == HIGH){
+    return 70;
+  }
+  if(digitalRead(din3) == HIGH){
+    return 50;
+  }
+  if(digitalRead(din2) == HIGH){
+    return 20;
+  }
+  if(digitalRead(din1) == HIGH){
+    return 10;
+  }
+  return 0;
+}
+
 void setup() {
   Serial.begin(115200);
+
+  maxlipo.begin();
 
   //Setup pins
   pinMode(VBAT_PIN, INPUT);
@@ -120,7 +145,7 @@ void setup() {
   pinMode(lowWaterLed, OUTPUT);
 
   digitalWrite(wifiLed, HIGH);
-  digitalWrite(lowWaterLed, HIGH);
+  digitalWrite(lowWaterLed, LOW);
 
   //Start wifi hotspot
 
@@ -191,25 +216,28 @@ void loop(){
             client.println("<h2>Activate Pumps: </h2>");
             
             if (digitalRead(rly1)) {
-              client.println("<p><a href=\"/" + String(rly1) + "/on\"><button class=\"button\">Pump1 On</button></a></p>");
+              client.println("<p><a href=\"/" + String(rly1) + "/on\"><button class=\"button\">W Pump1 On</button></a></p>");
             } else {
-              client.println("<p><a href=\"/" + String(rly1) + "/off\"><button class=\"button button2\">Pump1 off</button></a></p>");
+              client.println("<p><a href=\"/" + String(rly1) + "/off\"><button class=\"button button2\">W Pump1 off</button></a></p>");
             } 
-            if (digitalRead(rly2)) {
-              client.println("<p><a href=\"/" + String(rly2) + "/on\"><button class=\"button\">Pump1 On</button></a></p>");
+            if (digitalRead(rly4)) {
+              client.println("<p><a href=\"/" + String(rly4) + "/on\"><button class=\"button\">W Pump 3 On</button></a></p>");
             } else {
-              client.println("<p><a href=\"/" + String(rly2) + "/off\"><button class=\"button button2\">Pump2 off</button></a></p>");
+              client.println("<p><a href=\"/" + String(rly4) + "/off\"><button class=\"button button2\">W Pump 3 off</button></a></p>");
+            } 
+
+
+            if (digitalRead(rly2)) {
+              client.println("<p><a href=\"/" + String(rly2) + "/on\"><button class=\"button\">Suck On</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/" + String(rly2) + "/off\"><button class=\"button button2\">Suck off</button></a></p>");
             } 
             if (digitalRead(rly3)) {
               client.println("<p><a href=\"/" + String(rly3) + "/on\"><button class=\"button\">Pump1 On</button></a></p>");
             } else {
               client.println("<p><a href=\"/" + String(rly3) + "/off\"><button class=\"button button2\">Pump3 off</button></a></p>");
             } 
-            if (digitalRead(rly4)) {
-              client.println("<p><a href=\"/" + String(rly4) + "/on\"><button class=\"button\">Pump1 On</button></a></p>");
-            } else {
-              client.println("<p><a href=\"/" + String(rly4) + "/off\"><button class=\"button button2\">Pump4 off</button></a></p>");
-            } 
+
             if (digitalRead(rly5)) {
               client.println("<p><a href=\"/" + String(rly5) + "/on\"><button class=\"button\">Pump1 On</button></a></p>");
             } else {
@@ -221,11 +249,9 @@ void loop(){
             client.println("<p>Sensor 3:" + String(getSoilMoist(3)) + "</p>");
             client.println("<p>Sensor 4:" + String(getSoilMoist(4)) + "</p>");
 
-            client.println("<p>Battery level: " + String(getBatteryLevel()) + "</p>");
+            client.println("<p>Battery level: " + String(maxlipo.cellPercent()) + "% </p>");
 
-
-
-
+            client.println("<p>Water level: " + String(getWaterLevel()) + "% </p>");
 
                
             client.println("</body></html>");

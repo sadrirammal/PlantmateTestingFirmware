@@ -21,15 +21,16 @@ int din4 = 18;
 int din5 = 19;
 
 //Waterpumps
-int rly1 = 12;
+int rly1 = 12; //confirmed
+int rly2 = 27; //confirmed
+int rly3 = 26; //confirmed
+int rly4 = 25; //confirmed
+int rly5 = 13; //water inlet confirmed
+
 String rly1State = "off";
-int rly2 = 14; //TODO: CHANGE THIS
 String rly2State = "off";
-int rly3 = 27;
 String rly3State = "off";
-int rly4 = 26;
 String rly4State = "off";
-int rly5 = 25;
 String rly5State = "off";
 
 //Soil moist sensors
@@ -39,8 +40,9 @@ int ain3 = 34;
 int ain4 = 35;
 
 //Led Control
-int wifiLed = 2;
-int lowWaterLed = 15;
+int led1 = 2;       //confirmed white
+int led2 = 15;      //confirmed blue
+int errorLed = 14;  //confirmed red
 
 //Server
 WiFiServer server(80);
@@ -141,11 +143,13 @@ void setup() {
   digitalWrite(rly4, LOW);
   digitalWrite(rly5, LOW);
 
-  pinMode(wifiLed, OUTPUT);
-  pinMode(lowWaterLed, OUTPUT);
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(errorLed, OUTPUT);
 
-  digitalWrite(wifiLed, HIGH);
-  digitalWrite(lowWaterLed, LOW);
+  digitalWrite(led1, LOW);
+  digitalWrite(led2, LOW);
+  digitalWrite(errorLed, LOW);
 
   //Start wifi hotspot
 
@@ -181,6 +185,8 @@ void loop(){
             client.println();
             
             // turns the GPIOs on and off
+
+            // Pumps
             if (header.indexOf("GET /" + String(rly1)) >= 0) {
               digitalWrite(rly1, !digitalRead(rly1));
             } 
@@ -197,8 +203,17 @@ void loop(){
               digitalWrite(rly5, !digitalRead(rly5));
             } 
 
-            
-            
+            // LEDS
+            if (header.indexOf("GET /" + String(led1)) >= 0) {
+              digitalWrite(led1, !digitalRead(led1));
+            } 
+            if (header.indexOf("GET /" + String(led2)) >= 0) {
+              digitalWrite(led2, !digitalRead(led2));
+            } 
+            if (header.indexOf("GET /" + String(errorLed)) >= 0) {
+              digitalWrite(errorLed, !digitalRead(errorLed));
+            } 
+
             // Display the HTML web page
             client.println("<!DOCTYPE html><html>");
             client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
@@ -216,32 +231,51 @@ void loop(){
             client.println("<h2>Activate Pumps: </h2>");
             
             if (digitalRead(rly1)) {
-              client.println("<p><a href=\"/" + String(rly1) + "/on\"><button class=\"button\">W Pump1 On</button></a></p>");
+              client.println("<p><a href=\"/" + String(rly1) + "/on\"><button class=\"button\">W Pump 1 On</button></a></p>");
             } else {
               client.println("<p><a href=\"/" + String(rly1) + "/off\"><button class=\"button button2\">W Pump1 off</button></a></p>");
             } 
-            if (digitalRead(rly4)) {
-              client.println("<p><a href=\"/" + String(rly4) + "/on\"><button class=\"button\">W Pump 3 On</button></a></p>");
-            } else {
-              client.println("<p><a href=\"/" + String(rly4) + "/off\"><button class=\"button button2\">W Pump 3 off</button></a></p>");
-            } 
-
 
             if (digitalRead(rly2)) {
-              client.println("<p><a href=\"/" + String(rly2) + "/on\"><button class=\"button\">Suck On</button></a></p>");
+              client.println("<p><a href=\"/" + String(rly2) + "/on\"><button class=\"button\">W Pump 2 On</button></a></p>");
             } else {
-              client.println("<p><a href=\"/" + String(rly2) + "/off\"><button class=\"button button2\">Suck off</button></a></p>");
+              client.println("<p><a href=\"/" + String(rly2) + "/off\"><button class=\"button button2\">W Pump 2 off</button></a></p>");
             } 
+
             if (digitalRead(rly3)) {
-              client.println("<p><a href=\"/" + String(rly3) + "/on\"><button class=\"button\">Pump1 On</button></a></p>");
+              client.println("<p><a href=\"/" + String(rly3) + "/on\"><button class=\"button\">W Pump 3 On</button></a></p>");
             } else {
-              client.println("<p><a href=\"/" + String(rly3) + "/off\"><button class=\"button button2\">Pump3 off</button></a></p>");
+              client.println("<p><a href=\"/" + String(rly3) + "/off\"><button class=\"button button2\">W Pump 3 off</button></a></p>");
+            } 
+
+            if (digitalRead(rly4)) {
+              client.println("<p><a href=\"/" + String(rly4) + "/on\"><button class=\"button\">W Pump 4 On</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/" + String(rly4) + "/off\"><button class=\"button button2\">W Pump 4 off</button></a></p>");
             } 
 
             if (digitalRead(rly5)) {
-              client.println("<p><a href=\"/" + String(rly5) + "/on\"><button class=\"button\">Pump1 On</button></a></p>");
+              client.println("<p><a href=\"/" + String(rly5) + "/on\"><button class=\"button\">W Pump 2 On</button></a></p>");
             } else {
-              client.println("<p><a href=\"/" + String(rly5) + "/off\"><button class=\"button button2\">Pump5 off</button></a></p>");
+              client.println("<p><a href=\"/" + String(rly5) + "/off\"><button class=\"button button2\">W Pump 2 off</button></a></p>");
+            } 
+
+            if (digitalRead(led1)) {
+              client.println("<p><a href=\"/" + String(led1) + "/on\"><button class=\"button\">LED1 On</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/" + String(led1) + "/off\"><button class=\"button button2\">Led1 Off</button></a></p>");
+            } 
+
+            if (digitalRead(led2)) {
+              client.println("<p><a href=\"/" + String(led2) + "/on\"><button class=\"button\">LED2 On</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/" + String(led2) + "/off\"><button class=\"button button2\">Led2 Off</button></a></p>");
+            } 
+
+            if (digitalRead(errorLed)) {
+              client.println("<p><a href=\"/" + String(errorLed) + "/on\"><button class=\"button\">errorLed On</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/" + String(errorLed) + "/off\"><button class=\"button button2\">errorLed Off</button></a></p>");
             } 
 
             client.println("<p>Sensor 1:" + String(getSoilMoist(1)) + "</p>");
@@ -252,7 +286,6 @@ void loop(){
             client.println("<p>Battery level: " + String(maxlipo.cellPercent()) + "% </p>");
 
             client.println("<p>Water level: " + String(getWaterLevel()) + "% </p>");
-
                
             client.println("</body></html>");
             

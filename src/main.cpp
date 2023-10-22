@@ -3,6 +3,7 @@
 #include <WiFiClient.h>
 #include <AsyncTCP.h>
 #include "Adafruit_MAX1704X.h"
+#include <Adafruit_AHTX0.h>
 
 //Global Variables
 
@@ -12,6 +13,9 @@ const char* password = "123456789";
 
 //Battery fule gague
 Adafruit_MAX17048 maxlipo;
+
+//AHT21
+Adafruit_AHTX0 aht;
 
 //Water tank sensors
 int din1 = 16;
@@ -34,8 +38,8 @@ String rly4State = "off";
 String rly5State = "off";
 
 //Soil moist sensors
-int ain1 = 39; //check if this is actually the right pin
-int ain2 = 36; //check if this is actually the right pin
+int ain1 = 36; //check if this is actually the right pin
+int ain2 = 39; //check if this is actually the right pin
 int ain3 = 34;
 int ain4 = 35;
 
@@ -83,6 +87,18 @@ float getSoilMoist(int plantnr){
     return analogReadPercent(ain4);
   }
   return 0;
+}
+
+float getTemp(){
+  sensors_event_t humidity, temp;
+  aht.getEvent(&humidity, &temp);// populate temp and humidity objects with fresh data
+  return temp.temperature;
+}
+
+float getHumidity(){
+  sensors_event_t humidity, temp;
+  aht.getEvent(&humidity, &temp);// populate temp and humidity objects with fresh data
+  return humidity.relative_humidity;
 }
 
 //Battery
@@ -160,6 +176,13 @@ void setup() {
   WiFi.softAP(ssid, password);
   WiFi.softAPConfig(local_ip, gateway, subnet);
   server.begin();
+
+  if (! aht.begin()) 
+  {
+    Serial.println("Could not find AHT? Check wiring");
+    while (1) delay(10);
+  }
+  Serial.println("AHT10 or AHT20 found");
 }
 
 void loop(){
@@ -286,6 +309,10 @@ void loop(){
             client.println("<p>Battery level: " + String(maxlipo.cellPercent()) + "% </p>");
 
             client.println("<p>Water level: " + String(getWaterLevel()) + "% </p>");
+
+            client.println("<p>Humidity level: " + String(getHumidity()) + "% </p>");
+            client.println("<p>Temperature level: " + String(getTemp()) + "C </p>");
+
                
             client.println("</body></html>");
             

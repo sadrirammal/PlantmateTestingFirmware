@@ -3,7 +3,6 @@
 #include <WiFiClient.h>
 #include <AsyncTCP.h>
 #include "Adafruit_MAX1704X.h"
-#include <Adafruit_AHTX0.h>
 
 //Global Variables
 
@@ -15,7 +14,7 @@ const char* password = "123456789";
 Adafruit_MAX17048 maxlipo;
 
 //AHT21
-Adafruit_AHTX0 aht;
+// Adafruit_AHTX0 aht;
 
 //Water tank sensors
 int din1 = 16;
@@ -89,17 +88,17 @@ float getSoilMoist(int plantnr){
   return 0;
 }
 
-float getTemp(){
-  sensors_event_t humidity, temp;
-  aht.getEvent(&humidity, &temp);// populate temp and humidity objects with fresh data
-  return temp.temperature;
-}
+// float getTemp(){
+//   sensors_event_t humidity, temp;
+//   aht.getEvent(&humidity, &temp);// populate temp and humidity objects with fresh data
+//   return temp.temperature;
+// }
 
-float getHumidity(){
-  sensors_event_t humidity, temp;
-  aht.getEvent(&humidity, &temp);// populate temp and humidity objects with fresh data
-  return humidity.relative_humidity;
-}
+// float getHumidity(){
+//   sensors_event_t humidity, temp;
+//   aht.getEvent(&humidity, &temp);// populate temp and humidity objects with fresh data
+//   return humidity.relative_humidity;
+// }
 
 //Battery
 #define VBAT_PIN 33
@@ -141,13 +140,13 @@ void setup() {
   //Setup pins
   pinMode(VBAT_PIN, INPUT);
 
-  pinMode(din5, INPUT);  
-  pinMode(din4, INPUT);  
-  pinMode(din3, INPUT);  
-  pinMode(din2, INPUT);  
-  pinMode(din1, INPUT); 
+  pinMode(din5, INPUT);
+  pinMode(din4, INPUT);
+  pinMode(din3, INPUT);
+  pinMode(din2, INPUT);
+  pinMode(din1, INPUT);
 
-  pinMode(rly1,OUTPUT); 
+  pinMode(rly1,OUTPUT);
   pinMode(rly2,OUTPUT);
   pinMode(rly3,OUTPUT);
   pinMode(rly4,OUTPUT);
@@ -177,12 +176,12 @@ void setup() {
   WiFi.softAPConfig(local_ip, gateway, subnet);
   server.begin();
 
-  if (! aht.begin()) 
-  {
-    Serial.println("Could not find AHT? Check wiring");
-    while (1) delay(10);
-  }
-  Serial.println("AHT10 or AHT20 found");
+  // if (! aht.begin())
+  // {
+  //   Serial.println("Could not find AHT? Check wiring");
+  // while (1) delay(10);
+  // }
+  // Serial.println("AHT10 or AHT20 found");
 }
 
 void loop(){
@@ -206,100 +205,100 @@ void loop(){
             client.println("Content-type:text/html");
             client.println("Connection: close");
             client.println();
-            
+
             // turns the GPIOs on and off
 
             // Pumps
             if (header.indexOf("GET /" + String(rly1)) >= 0) {
               digitalWrite(rly1, !digitalRead(rly1));
-            } 
+            }
             if (header.indexOf("GET /" + String(rly2)) >= 0) {
               digitalWrite(rly2, !digitalRead(rly2));
-            } 
+            }
             if (header.indexOf("GET /" + String(rly3)) >= 0) {
               digitalWrite(rly3, !digitalRead(rly3));
-            } 
+            }
             if (header.indexOf("GET /" + String(rly4)) >= 0) {
               digitalWrite(rly4, !digitalRead(rly4));
-            } 
+            }
             if (header.indexOf("GET /" + String(rly5)) >= 0) {
               digitalWrite(rly5, !digitalRead(rly5));
-            } 
+            }
 
             // LEDS
             if (header.indexOf("GET /" + String(led1)) >= 0) {
               digitalWrite(led1, !digitalRead(led1));
-            } 
+            }
             if (header.indexOf("GET /" + String(led2)) >= 0) {
               digitalWrite(led2, !digitalRead(led2));
-            } 
+            }
             if (header.indexOf("GET /" + String(errorLed)) >= 0) {
               digitalWrite(errorLed, !digitalRead(errorLed));
-            } 
+            }
 
             // Display the HTML web page
             client.println("<!DOCTYPE html><html>");
             client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
             client.println("<link rel=\"icon\" href=\"data:,\">");
-            // CSS to style the on/off buttons 
+            // CSS to style the on/off buttons
             // Feel free to change the background-color and font-size attributes to fit your preferences
             client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
             client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px;");
             client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
             client.println(".button2 {background-color: #555555;}</style></head>");
-            
+
             // Web Page Heading
             client.println("<body><h1>Plantmate Test Server</h1>");
-            
+
             client.println("<h2>Activate Pumps: </h2>");
-            
+
             if (digitalRead(rly1)) {
               client.println("<p><a href=\"/" + String(rly1) + "/on\"><button class=\"button\">W Pump 1 On</button></a></p>");
             } else {
               client.println("<p><a href=\"/" + String(rly1) + "/off\"><button class=\"button button2\">W Pump1 off</button></a></p>");
-            } 
+            }
 
             if (digitalRead(rly2)) {
               client.println("<p><a href=\"/" + String(rly2) + "/on\"><button class=\"button\">W Pump 2 On</button></a></p>");
             } else {
               client.println("<p><a href=\"/" + String(rly2) + "/off\"><button class=\"button button2\">W Pump 2 off</button></a></p>");
-            } 
+            }
 
             if (digitalRead(rly3)) {
               client.println("<p><a href=\"/" + String(rly3) + "/on\"><button class=\"button\">W Pump 3 On</button></a></p>");
             } else {
               client.println("<p><a href=\"/" + String(rly3) + "/off\"><button class=\"button button2\">W Pump 3 off</button></a></p>");
-            } 
+            }
 
             if (digitalRead(rly4)) {
               client.println("<p><a href=\"/" + String(rly4) + "/on\"><button class=\"button\">W Pump 4 On</button></a></p>");
             } else {
               client.println("<p><a href=\"/" + String(rly4) + "/off\"><button class=\"button button2\">W Pump 4 off</button></a></p>");
-            } 
+            }
 
             if (digitalRead(rly5)) {
               client.println("<p><a href=\"/" + String(rly5) + "/on\"><button class=\"button\">W Pump 2 On</button></a></p>");
             } else {
               client.println("<p><a href=\"/" + String(rly5) + "/off\"><button class=\"button button2\">W Pump 2 off</button></a></p>");
-            } 
+            }
 
             if (digitalRead(led1)) {
               client.println("<p><a href=\"/" + String(led1) + "/on\"><button class=\"button\">LED1 On</button></a></p>");
             } else {
               client.println("<p><a href=\"/" + String(led1) + "/off\"><button class=\"button button2\">Led1 Off</button></a></p>");
-            } 
+            }
 
             if (digitalRead(led2)) {
               client.println("<p><a href=\"/" + String(led2) + "/on\"><button class=\"button\">LED2 On</button></a></p>");
             } else {
               client.println("<p><a href=\"/" + String(led2) + "/off\"><button class=\"button button2\">Led2 Off</button></a></p>");
-            } 
+            }
 
             if (digitalRead(errorLed)) {
               client.println("<p><a href=\"/" + String(errorLed) + "/on\"><button class=\"button\">errorLed On</button></a></p>");
             } else {
               client.println("<p><a href=\"/" + String(errorLed) + "/off\"><button class=\"button button2\">errorLed Off</button></a></p>");
-            } 
+            }
 
             client.println("<p>Sensor 1:" + String(getSoilMoist(1)) + "</p>");
             client.println("<p>Sensor 2:" + String(getSoilMoist(2)) + "</p>");
@@ -310,12 +309,12 @@ void loop(){
 
             client.println("<p>Water level: " + String(getWaterLevel()) + "% </p>");
 
-            client.println("<p>Humidity level: " + String(getHumidity()) + "% </p>");
-            client.println("<p>Temperature level: " + String(getTemp()) + "C </p>");
+            // client.println("<p>Humidity level: " + String(getHumidity()) + "% </p>");
+            // client.println("<p>Temperature level: " + String(getTemp()) + "C </p>");
 
-               
+
             client.println("</body></html>");
-            
+
             // The HTTP response ends with another blank line
             client.println();
             // Break out of the while loop

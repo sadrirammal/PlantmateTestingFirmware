@@ -167,7 +167,7 @@ void setup()
 
 void loop()
 {
-  setupWiFi("WIFI_SSID_REMOVED", "WIFI_PASSWORD_REMOVED");
+  setupWiFi("wifi name", "passwort");
 
   const int numberOfTestRuns = 1;
   const int pumpRunTime = 3000; 

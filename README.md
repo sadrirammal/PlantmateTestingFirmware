@@ -16,15 +16,27 @@ If WiFi is not available, the pump cycle still runs and the OTA step is skipped.
 - Pump MOSFET gates on GPIO 4, 16, 17, 18, 19 (pump 1 to 5, the fifth is the tank intake pump)
 - Status LEDs on GPIO 2, 15, 13 (white, blue, red), active low
 
+## Setting up PlatformIO
+
+This project is built with [PlatformIO](https://platformio.org/), which handles the ESP32 toolchain, libraries and upload for you. Nothing else needs to be installed by hand.
+
+- Install [Visual Studio Code](https://code.visualstudio.com/), then add the **PlatformIO IDE** extension from the Extensions panel. The first start downloads the ESP32 toolchain, which takes a few minutes.
+- In VS Code use **File > Open Folder** on this repo. PlatformIO reads `platformio.ini` and pulls the dependencies automatically.
+- The PlatformIO toolbar at the bottom of VS Code has **Build** (checkmark), **Upload** (arrow) and **Serial Monitor** (plug) buttons. Those are the only three you need.
+- On Windows you may need the CH340 USB driver for the board to show up as a COM port. PlatformIO usually picks the port itself; if not, add `upload_port = COM5` (or whatever yours is) to `platformio.ini`.
+
+If you have never used PlatformIO before, this video walks through install, first build and upload to an ESP32 in about 15 minutes:
+[Perfect Combo for ESP32: VS Code & PlatformIO Guide](https://www.youtube.com/watch?v=WxELHnnlBmU). The official quick-start is at [docs.platformio.org](https://docs.platformio.org/en/latest/integration/ide/vscode.html#quick-start).
+
 ## Flashing
 
-1. Install [PlatformIO](https://platformio.org/) (VS Code extension or CLI).
+1. Set up PlatformIO as described above and open this folder in VS Code.
 2. Open `src/main.cpp` and replace the placeholder WiFi credentials in `loop()`:
    ```cpp
    setupWiFi("wifi name", "passwort");
    ```
 3. Connect the PCB over USB-C. Hold **BOOT** and tap **RST** if the board does not enter the bootloader on its own.
-4. Build and upload:
+4. Click **Upload** in the PlatformIO toolbar, then **Serial Monitor**. From the command line the equivalent is:
    ```
    pio run -t upload
    pio device monitor
